@@ -17,16 +17,20 @@ DL=$3
 [ -z "$DL" ] && { echo "Need to specify the download directory"; exit 1; }
 
 BASENAME=`basename $URL .git`
-CACHED_PATH=$DL/$BASENAME-$HASHTAG.tgz
+CACHED_PATH_BASE=$DL/$BASENAME-$HASHTAG
+CACHED_PATH_TGZ=$CACHED_PATH_BASE.tgz
+CACHED_PATH_TAR=$CACHED_PATH_BASE.tar
 
 # Clean up in case we were interrupted during a previous download
 rm -fr $BASENAME
 
-if [ -e "$CACHED_PATH" ]; then
-    tar xf $CACHED_PATH
+if [ -e "$CACHED_PATH_TGZ" ]; then
+    tar xzf $CACHED_PATH_TGZ
 else
     git clone $URL
     cd $BASENAME && git checkout -b nerves $HASHTAG
-    git archive --format=tar.gz --prefix=$BASENAME/ $HASHTAG > $CACHED_PATH
+    git archive --format=tar --prefix=$BASENAME/ $HASHTAG > $CACHED_PATH_TAR
+    gzip -c $CACHED_PATH_TAR > $CACHED_PATH_TGZ
+    rm $CACHED_PATH_TAR
 fi
 
